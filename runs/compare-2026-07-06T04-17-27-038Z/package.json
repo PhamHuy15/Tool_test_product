@@ -1,0 +1,18 @@
+{
+  "name": "compare-2026-07-06t04-17-27-038z",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "diff": "^9.0.0",
+    "fast-xml-parser": "^5.9.3",
+    "playwright": "^1.61.1"
+  }
+}

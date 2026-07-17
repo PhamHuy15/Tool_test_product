@@ -1,0 +1,90 @@
+[0706/133006.804:ERROR:gpu\ipc\client\command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[0706/140931.496:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:941] Running WebRTC with a combined Network and Worker thread.
+[0706/140931.554:ERROR:gpu\command_buffer\service\webgpu_decoder_impl.cc:1724] Failed to query ID3D11Device from ANGLE.
+[0706/140931.603:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/140931.604:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/140932.425:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x13f401f8e400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[0706/140932.477:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x13f401f8e400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[0706/140946.525:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:941] Running WebRTC with a combined Network and Worker thread.
+[0706/140946.543:ERROR:gpu\command_buffer\service\webgpu_decoder_impl.cc:1724] Failed to query ID3D11Device from ANGLE.
+[0706/140946.560:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/140946.560:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/140948.192:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x2b4001b1000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[0706/140948.226:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x2b4001b1000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+[0706/144210.874:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:941] Running WebRTC with a combined Network and Worker thread.
+[0706/144210.941:ERROR:gpu\command_buffer\service\webgpu_decoder_impl.cc:1724] Failed to query ID3D11Device from ANGLE.
+[0706/144210.969:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/144210.969:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/144223.832:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:941] Running WebRTC with a combined Network and Worker thread.
+[0706/144223.925:ERROR:gpu\command_buffer\service\webgpu_decoder_impl.cc:1724] Failed to query ID3D11Device from ANGLE.
+[0706/144224.142:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/144224.146:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/144356.183:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 5
+[0706/144402.940:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 17
+[0706/144434.259:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 5
+[0706/144447.325:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 5
+[0706/144452.859:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 13
+[0706/144502.733:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 25
+[0706/144521.692:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 5
+[0706/144527.177:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 13
+[0706/144547.003:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 5
+[0706/144554.683:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 17
+[0706/144614.989:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 31
+[0706/144641.756:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 5
+[0706/144700.976:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 3
+[0706/144706.600:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 11
+[0706/144751.692:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 5
+[0706/144756.419:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 13
+[0706/144839.597:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 5
+[0706/145005.350:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:941] Running WebRTC with a combined Network and Worker thread.
+[0706/145005.368:ERROR:gpu\command_buffer\service\webgpu_decoder_impl.cc:1724] Failed to query ID3D11Device from ANGLE.
+[0706/145005.393:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/145005.398:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/145007.160:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x6d1c00175c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[0706/145007.190:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x6d1c00175c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[0706/145036.081:WARNING:third_party\webrtc\media\engine\webrtc_voice_engine.cc:804] Attempting to stop aecdump when no audio processing module is present
+[0706/151617.316:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:941] Running WebRTC with a combined Network and Worker thread.
+[0706/151617.334:ERROR:gpu\command_buffer\service\webgpu_decoder_impl.cc:1724] Failed to query ID3D11Device from ANGLE.
+[0706/151617.352:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/151617.353:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/151619.271:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x626c03720600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[0706/151619.287:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x626c03720600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+[0706/152147.249:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 5
+[0706/152147.249:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 9
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 11
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 13
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 15
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 17
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 19
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 21
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 23
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 25
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 27
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 29
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 31
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 33
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 35
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 37
+[0706/152147.443:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 39
+[0706/152147.444:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 41
+[0706/152147.444:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 43
+[0706/152147.444:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 45
+[0706/152147.444:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 47
+[0706/152147.444:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 49
+[0706/152147.444:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 51
+[0706/152147.444:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 53
+[0706/152147.444:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 55
+[0706/152147.444:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 57
+[0706/152147.444:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 59
+[0706/152147.448:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 61
+[0706/152147.642:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 63
+[0706/152212.632:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 11
+[0706/152212.632:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 13
+[0706/152212.632:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 15
+[0706/152212.632:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 17
+[0706/152212.632:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 19
+[0706/152441.760:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:941] Running WebRTC with a combined Network and Worker thread.
+[0706/152441.782:ERROR:gpu\command_buffer\service\webgpu_decoder_impl.cc:1724] Failed to query ID3D11Device from ANGLE.
+[0706/152441.806:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/152441.806:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/152526.698:ERROR:gpu\command_buffer\service\shared_image\shared_image_manager.cc:386] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.

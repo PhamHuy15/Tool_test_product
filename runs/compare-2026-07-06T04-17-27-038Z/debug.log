@@ -1,0 +1,25 @@
+[0706/112047.879:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:941] Running WebRTC with a combined Network and Worker thread.
+[0706/112047.904:ERROR:gpu\command_buffer\service\webgpu_decoder_impl.cc:1724] Failed to query ID3D11Device from ANGLE.
+[0706/112047.929:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/112047.929:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/112049.957:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x76bc02551800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[0706/112049.993:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x76bc02551800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[0706/112226.075:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:941] Running WebRTC with a combined Network and Worker thread.
+[0706/112226.087:ERROR:gpu\command_buffer\service\webgpu_decoder_impl.cc:1724] Failed to query ID3D11Device from ANGLE.
+[0706/112226.101:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/112226.101:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/112226.908:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x124c026b9e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[0706/112226.944:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x124c026b9e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[0706/113324.570:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:941] Running WebRTC with a combined Network and Worker thread.
+[0706/113324.591:ERROR:gpu\command_buffer\service\webgpu_decoder_impl.cc:1724] Failed to query ID3D11Device from ANGLE.
+[0706/113324.633:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/113324.634:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/113326.700:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x40140017d600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[0706/113326.734:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x40140017d600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[0706/113327.101:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:941] Running WebRTC with a combined Network and Worker thread.
+[0706/113327.119:ERROR:gpu\command_buffer\service\webgpu_decoder_impl.cc:1724] Failed to query ID3D11Device from ANGLE.
+[0706/113327.139:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/113327.140:INFO:third_party\blink\renderer\platform\p2p\ipc_socket_factory.cc:575] Setting new p2p socket buffer limit to 262144
+[0706/113329.091:WARNING:third_party\webrtc\media\engine\webrtc_voice_engine.cc:804] Attempting to stop aecdump when no audio processing module is present
+[0706/113331.403:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 5
+[0706/113331.404:WARNING:net\spdy\spdy_session.cc:3161] Received HEADERS for invalid stream 7

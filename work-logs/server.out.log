@@ -1,0 +1,5 @@
+
+> local-ai-test-web-server@1.0.0 start
+> node index.js
+
+Local AI Test Web chạy tại http://127.0.0.1:4545

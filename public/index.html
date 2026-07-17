@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Local AI Test Web — Developer Console</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+    <script
+      src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"
+      defer
+    ></script>
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="workspace">
+        <aside class="input-pane">
+          <header>
+            <div class="logo-wrapper">
+              <span class="logo-dot"></span>
+              <span class="eyebrow">Local Codex Runner</span>
+            </div>
+            <h1>AI Website Test</h1>
+          </header>
+
+          <div class="mode-tabs" role="tablist" aria-label="Chọn tính năng">
+            <button
+              class="mode-tab active"
+              data-mode-target="aiTestSection"
+              type="button"
+            >
+              Chạy AI Test
+            </button>
+            <button
+              class="mode-tab"
+              data-mode-target="contentCompareSection"
+              type="button"
+            >
+              So Sánh Nội Dung
+            </button>
+          </div>
+
+          <section id="aiTestSection" class="mode-section active">
+            <div class="field-header">
+              <label for="jsonInput">JSON test package</label>
+              <div class="textarea-actions">
+                <button id="loadSampleJson" class="action-link" type="button">
+                  JSON Mẫu
+                </button>
+                <label for="uploadJsonFile" class="action-link file-label">
+                  Tải File
+                  <input
+                    id="uploadJsonFile"
+                    type="file"
+                    accept=".json"
+                    style="display: none"
+                  />
+                </label>
+              </div>
+            </div>
+            <textarea
+              id="jsonInput"
+              spellcheck="false"
+              placeholder='{
+  "targetUrl": "https://example.com",
+  "siteType": "landing",
+  "testScope": ["content", "ui"],
+  "pageSnapshot": {}
+}'
+            ></textarea>
+
+            <p class="note">
+              Mỗi lần chạy sẽ tốn API credit của Codex và có thể mất vài phút.
+            </p>
+
+            <div class="actions">
+              <button id="runButton" type="button">
+                <span class="btn-spinner hidden"></span>
+                <span class="btn-text">Chạy AI Test</span>
+              </button>
+              <button id="clearButton" type="button" class="secondary">
+                Xóa
+              </button>
+            </div>
+          </section>
+
+          <section id="contentCompareSection" class="mode-section">
+            <div class="field">
+              <label for="sourceUrlInput">URL trang gốc</label>
+              <input
+                id="sourceUrlInput"
+                type="url"
+                placeholder="https://source-site.com/"
+                autocomplete="url"
+              />
+            </div>
+
+            <div class="field">
+              <label for="targetUrlInput">URL trang đích</label>
+              <input
+                id="targetUrlInput"
+                type="url"
+                placeholder="https://target-site.com/"
+                autocomplete="url"
+              />
+            </div>
+
+            <p class="note">
+              So sánh toàn bộ site có thể mất nhiều phút đến hàng giờ tùy số
+              lượng trang, và tốn API credit thật mỗi lần chạy.
+            </p>
+
+            <div class="actions">
+              <button id="compareButton" type="button">
+                <span class="btn-spinner hidden"></span>
+                <span class="btn-text">So Sánh Nội Dung</span>
+              </button>
+              <button id="compareClearButton" type="button" class="secondary">
+                Xóa
+              </button>
+            </div>
+          </section>
+
+          <div id="status" class="status idle">Sẵn sàng.</div>
+
+          <!-- Lịch sử các phiên chạy -->
+          <div class="history-wrapper">
+            <div class="history-header">
+              <h2>Lịch sử chạy</h2>
+              <button
+                id="refreshHistory"
+                class="refresh-btn"
+                type="button"
+                title="Tải lại lịch sử"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div id="historyList" class="history-list">
+              <div class="empty-history">Đang tải lịch sử...</div>
+            </div>
+          </div>
+        </aside>
+
+        <article class="output-pane">
+          <div class="tabs" role="tablist" aria-label="Kết quả">
+            <button class="tab active" data-target="logPanel" type="button">
+              Tiến trình
+            </button>
+            <button class="tab" data-target="pairsPanel" type="button">
+              Cặp trang
+            </button>
+            <button class="tab" data-target="comparisonPanel" type="button">
+              So sánh nội dung
+            </button>
+            <button class="tab" data-target="evidencePanel" type="button">
+              Ảnh chụp
+            </button>
+            <button class="tab" data-target="reportPanel" type="button">
+              Test Report
+            </button>
+            <button class="tab" data-target="fixPanel" type="button">
+              Fix Plan
+            </button>
+          </div>
+
+          <section id="logPanel" class="panel active">
+            <div class="terminal-window">
+              <div class="terminal-header">
+                <div class="terminal-dots">
+                  <span class="dot dot-close"></span>
+                  <span class="dot dot-minimize"></span>
+                  <span class="dot dot-expand"></span>
+                </div>
+                <div class="terminal-title">Terminal — Live logs</div>
+                <button
+                  id="copyLogButton"
+                  class="copy-log-btn"
+                  type="button"
+                  title="Sao chép toàn bộ log"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect
+                      x="9"
+                      y="9"
+                      width="13"
+                      height="13"
+                      rx="2"
+                      ry="2"
+                    ></rect>
+                    <path
+                      d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                    ></path>
+                  </svg>
+                  <span>Copy Log</span>
+                </button>
+              </div>
+              <pre id="logOutput" class="log"></pre>
+            </div>
+          </section>
+
+          <section id="pairsPanel" class="panel">
+            <div class="panel-toolbar">
+              <a id="downloadPagePairs" class="download hidden" href="#"
+                >Tải page_pairs.csv</a
+              >
+            </div>
+            <div id="pairSummary" class="empty-state">
+              Chưa có dữ liệu cặp trang.
+            </div>
+          </section>
+
+          <section id="comparisonPanel" class="panel">
+            <div class="panel-toolbar">
+              <a id="downloadComparisonReport" class="download hidden" href="#"
+                >Tải CONTENT_COMPARISON_REPORT.md</a
+              >
+            </div>
+            <article id="comparisonReportOutput" class="markdown"></article>
+          </section>
+
+          <section id="evidencePanel" class="panel">
+            <div id="evidenceGrid" class="evidence-grid empty">
+              Chưa có ảnh chụp.
+            </div>
+          </section>
+
+          <section id="reportPanel" class="panel">
+            <div class="panel-toolbar">
+              <a id="downloadReport" class="download hidden" href="#"
+                >Tải TEST_REPORT.md</a
+              >
+            </div>
+            <article id="reportOutput" class="markdown"></article>
+          </section>
+
+          <section id="fixPanel" class="panel">
+            <div class="panel-toolbar">
+              <a id="downloadFixPlan" class="download hidden" href="#"
+                >Tải FIX_PLAN.md</a
+              >
+            </div>
+            <article id="fixOutput" class="markdown"></article>
+          </section>
+        </article>
+      </section>
+    </main>
+
+    <!-- Lightbox Modal phóng to ảnh bằng chứng -->
+    <div id="imageLightbox" class="lightbox">
+      <span class="lightbox-close">&times;</span>
+      <div class="lightbox-image-container">
+        <img class="lightbox-content" id="lightboxImg" alt="Phóng to ảnh" />
+      </div>
+      <div id="lightboxCaption" class="lightbox-caption"></div>
+    </div>
+  </body>
+</html>

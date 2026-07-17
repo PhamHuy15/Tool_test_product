@@ -1,0 +1,131 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.11.0
+2 info using node@v24.14.1
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:D:\workspaces\AI Test Local Web\runs\compare-2026-07-06T04-17-27-038Z\.npmrc
+5 silly config load:file:C:\Users\admin\.npmrc
+6 silly config load:file:C:\Users\admin\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install playwright fast-xml-parser diff
+8 verbose argv "install" "playwright" "fast-xml-parser" "diff" "--no-audit" "--no-fund"
+9 verbose logfile logs-max:10 dir:D:\workspaces\AI Test Local Web\runs\compare-2026-07-06T04-17-27-038Z\.npm-cache\_logs\2026-07-06T04_18_02_961Z-
+10 verbose logfile D:\workspaces\AI Test Local Web\runs\compare-2026-07-06T04-17-27-038Z\.npm-cache\_logs\2026-07-06T04_18_02_961Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 silly idealTree buildDeps
+14 silly fetch manifest playwright@*
+15 silly packumentCache full:https://registry.npmjs.org/playwright cache-miss
+16 http fetch GET 200 https://registry.npmjs.org/npm 275ms
+17 http fetch GET 200 https://registry.npmjs.org/playwright 501ms (cache miss)
+18 silly packumentCache full:https://registry.npmjs.org/playwright set size:undefined disposed:false
+19 silly fetch manifest fast-xml-parser@*
+20 silly packumentCache full:https://registry.npmjs.org/fast-xml-parser cache-miss
+21 http fetch GET 200 https://registry.npmjs.org/fast-xml-parser 76ms (cache miss)
+22 silly packumentCache full:https://registry.npmjs.org/fast-xml-parser set size:undefined disposed:false
+23 silly fetch manifest diff@*
+24 silly packumentCache full:https://registry.npmjs.org/diff cache-miss
+25 http fetch GET 200 https://registry.npmjs.org/diff 190ms (cache miss)
+26 silly packumentCache full:https://registry.npmjs.org/diff set size:undefined disposed:false
+27 silly placeDep ROOT diff@9.0.0 OK for: compare-2026-07-06t04-17-27-038z@1.0.0 want: *
+28 silly placeDep ROOT fast-xml-parser@5.9.3 OK for: compare-2026-07-06t04-17-27-038z@1.0.0 want: *
+29 silly placeDep ROOT playwright@1.61.1 OK for: compare-2026-07-06t04-17-27-038z@1.0.0 want: *
+30 silly fetch manifest strnum@^2.4.1
+31 silly packumentCache full:https://registry.npmjs.org/strnum cache-miss
+32 silly fetch manifest is-unsafe@^1.0.1
+33 silly packumentCache full:https://registry.npmjs.org/is-unsafe cache-miss
+34 silly fetch manifest xml-naming@^0.1.0
+35 silly packumentCache full:https://registry.npmjs.org/xml-naming cache-miss
+36 silly fetch manifest fast-xml-builder@^1.2.0
+37 silly packumentCache full:https://registry.npmjs.org/fast-xml-builder cache-miss
+38 silly fetch manifest @nodable/entities@^2.2.0
+39 silly packumentCache full:https://registry.npmjs.org/@nodable%2fentities cache-miss
+40 silly fetch manifest path-expression-matcher@^1.5.0
+41 silly packumentCache full:https://registry.npmjs.org/path-expression-matcher cache-miss
+42 silly fetch manifest playwright-core@1.61.1
+43 silly packumentCache full:https://registry.npmjs.org/playwright-core cache-miss
+44 silly fetch manifest fsevents@2.3.2
+45 silly packumentCache full:https://registry.npmjs.org/fsevents cache-miss
+46 http fetch GET 200 https://registry.npmjs.org/is-unsafe 59ms (cache miss)
+47 silly packumentCache full:https://registry.npmjs.org/is-unsafe set size:undefined disposed:false
+48 http fetch GET 200 https://registry.npmjs.org/strnum 72ms (cache miss)
+49 silly packumentCache full:https://registry.npmjs.org/strnum set size:undefined disposed:false
+50 http fetch GET 200 https://registry.npmjs.org/xml-naming 128ms (cache miss)
+51 silly packumentCache full:https://registry.npmjs.org/xml-naming set size:undefined disposed:false
+52 http fetch GET 200 https://registry.npmjs.org/fast-xml-builder 147ms (cache miss)
+53 silly packumentCache full:https://registry.npmjs.org/fast-xml-builder set size:undefined disposed:false
+54 http fetch GET 200 https://registry.npmjs.org/fsevents 155ms (cache miss)
+55 silly packumentCache full:https://registry.npmjs.org/fsevents set size:undefined disposed:false
+56 http fetch GET 200 https://registry.npmjs.org/@nodable%2fentities 166ms (cache miss)
+57 silly packumentCache full:https://registry.npmjs.org/@nodable%2fentities set size:undefined disposed:false
+58 http fetch GET 200 https://registry.npmjs.org/path-expression-matcher 286ms (cache miss)
+59 silly packumentCache full:https://registry.npmjs.org/path-expression-matcher set size:undefined disposed:false
+60 http fetch GET 200 https://registry.npmjs.org/playwright-core 594ms (cache miss)
+61 silly packumentCache full:https://registry.npmjs.org/playwright-core set size:undefined disposed:false
+62 silly placeDep ROOT @nodable/entities@2.2.0 OK for: fast-xml-parser@5.9.3 want: ^2.2.0
+63 silly placeDep ROOT fast-xml-builder@1.2.1 OK for: fast-xml-parser@5.9.3 want: ^1.2.0
+64 silly placeDep ROOT is-unsafe@1.0.1 OK for: fast-xml-parser@5.9.3 want: ^1.0.1
+65 silly placeDep ROOT path-expression-matcher@1.6.1 OK for: fast-xml-parser@5.9.3 want: ^1.5.0
+66 silly placeDep ROOT strnum@2.4.1 OK for: fast-xml-parser@5.9.3 want: ^2.4.1
+67 silly placeDep ROOT xml-naming@0.1.0 OK for: fast-xml-parser@5.9.3 want: ^0.1.0
+68 silly fetch manifest anynum@^1.0.1
+69 silly packumentCache full:https://registry.npmjs.org/anynum cache-miss
+70 http fetch GET 200 https://registry.npmjs.org/anynum 54ms (cache miss)
+71 silly packumentCache full:https://registry.npmjs.org/anynum set size:undefined disposed:false
+72 silly placeDep ROOT fsevents@2.3.2 OK for: playwright@1.61.1 want: 2.3.2
+73 silly placeDep ROOT playwright-core@1.61.1 OK for: playwright@1.61.1 want: 1.61.1
+74 silly placeDep ROOT anynum@1.0.1 OK for: strnum@2.4.1 want: ^1.0.1
+75 silly reify moves {}
+76 http cache anynum@https://registry.npmjs.org/anynum/-/anynum-1.0.1.tgz 1ms (cache hit)
+77 http cache xml-naming@https://registry.npmjs.org/xml-naming/-/xml-naming-0.1.0.tgz 0ms (cache hit)
+78 http cache strnum@https://registry.npmjs.org/strnum/-/strnum-2.4.1.tgz 0ms (cache hit)
+79 http cache playwright-core@https://registry.npmjs.org/playwright-core/-/playwright-core-1.61.1.tgz 0ms (cache hit)
+80 http cache path-expression-matcher@https://registry.npmjs.org/path-expression-matcher/-/path-expression-matcher-1.6.1.tgz 0ms (cache hit)
+81 http cache is-unsafe@https://registry.npmjs.org/is-unsafe/-/is-unsafe-1.0.1.tgz 0ms (cache hit)
+82 http cache @nodable/entities@https://registry.npmjs.org/@nodable/entities/-/entities-2.2.0.tgz 0ms (cache hit)
+83 http cache fast-xml-builder@https://registry.npmjs.org/fast-xml-builder/-/fast-xml-builder-1.2.1.tgz 0ms (cache hit)
+84 silly tarball no local data for anynum@https://registry.npmjs.org/anynum/-/anynum-1.0.1.tgz. Extracting by manifest.
+85 silly tarball no local data for xml-naming@https://registry.npmjs.org/xml-naming/-/xml-naming-0.1.0.tgz. Extracting by manifest.
+86 http cache playwright@https://registry.npmjs.org/playwright/-/playwright-1.61.1.tgz 0ms (cache hit)
+87 silly tarball no local data for strnum@https://registry.npmjs.org/strnum/-/strnum-2.4.1.tgz. Extracting by manifest.
+88 silly tarball no local data for playwright-core@https://registry.npmjs.org/playwright-core/-/playwright-core-1.61.1.tgz. Extracting by manifest.
+89 http cache fast-xml-parser@https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.9.3.tgz 0ms (cache hit)
+90 silly tarball no local data for path-expression-matcher@https://registry.npmjs.org/path-expression-matcher/-/path-expression-matcher-1.6.1.tgz. Extracting by manifest.
+91 silly tarball no local data for is-unsafe@https://registry.npmjs.org/is-unsafe/-/is-unsafe-1.0.1.tgz. Extracting by manifest.
+92 silly tarball no local data for @nodable/entities@https://registry.npmjs.org/@nodable/entities/-/entities-2.2.0.tgz. Extracting by manifest.
+93 silly tarball no local data for fast-xml-builder@https://registry.npmjs.org/fast-xml-builder/-/fast-xml-builder-1.2.1.tgz. Extracting by manifest.
+94 http cache diff@https://registry.npmjs.org/diff/-/diff-9.0.0.tgz 0ms (cache hit)
+95 silly tarball no local data for playwright@https://registry.npmjs.org/playwright/-/playwright-1.61.1.tgz. Extracting by manifest.
+96 silly tarball no local data for fast-xml-parser@https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.9.3.tgz. Extracting by manifest.
+97 silly tarball no local data for diff@https://registry.npmjs.org/diff/-/diff-9.0.0.tgz. Extracting by manifest.
+98 http fetch GET 200 https://registry.npmjs.org/anynum/-/anynum-1.0.1.tgz 76ms (cache miss)
+99 http fetch GET 200 https://registry.npmjs.org/strnum/-/strnum-2.4.1.tgz 76ms (cache miss)
+100 http fetch GET 200 https://registry.npmjs.org/xml-naming/-/xml-naming-0.1.0.tgz 77ms (cache miss)
+101 http fetch GET 200 https://registry.npmjs.org/@nodable/entities/-/entities-2.2.0.tgz 105ms (cache miss)
+102 http fetch GET 200 https://registry.npmjs.org/fast-xml-builder/-/fast-xml-builder-1.2.1.tgz 105ms (cache miss)
+103 http fetch GET 200 https://registry.npmjs.org/path-expression-matcher/-/path-expression-matcher-1.6.1.tgz 116ms (cache miss)
+104 http fetch GET 200 https://registry.npmjs.org/is-unsafe/-/is-unsafe-1.0.1.tgz 121ms (cache miss)
+105 http fetch GET 200 https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.9.3.tgz 335ms (cache miss)
+106 http fetch GET 200 https://registry.npmjs.org/playwright/-/playwright-1.61.1.tgz 410ms (cache miss)
+107 http fetch GET 200 https://registry.npmjs.org/diff/-/diff-9.0.0.tgz 426ms (cache miss)
+108 http fetch GET 200 https://registry.npmjs.org/playwright-core/-/playwright-core-1.61.1.tgz 469ms (cache miss)
+109 silly ADD node_modules/anynum
+110 silly ADD node_modules/playwright-core
+111 silly ADD node_modules/xml-naming
+112 silly ADD node_modules/strnum
+113 silly ADD node_modules/path-expression-matcher
+114 silly ADD node_modules/is-unsafe
+115 silly ADD node_modules/fast-xml-builder
+116 silly ADD node_modules/@nodable/entities
+117 silly ADD node_modules/playwright
+118 silly ADD node_modules/fast-xml-parser
+119 silly ADD node_modules/diff
+120 verbose cwd D:\workspaces\AI Test Local Web\runs\compare-2026-07-06T04-17-27-038Z
+121 verbose os Windows_NT 10.0.26200
+122 verbose node v24.14.1
+123 verbose npm  v11.11.0
+124 notice
+124 notice New minor version of npm available! 11.11.0 -> 11.18.0
+124 notice Changelog: https://github.com/npm/cli/releases/tag/v11.18.0
+124 notice To update run: npm install -g npm@11.18.0
+124 notice  { force: true, Symbol(proc-log.meta): true }
+125 verbose exit 0
+126 info ok

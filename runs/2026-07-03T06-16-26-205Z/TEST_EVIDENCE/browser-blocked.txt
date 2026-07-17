@@ -1,0 +1,9 @@
+Playwright/Chrome was attempted on 2026-07-03, but navigation to https://alternita.devseite.top/ failed with:
+
+net::ERR_NETWORK_ACCESS_DENIED
+
+A PowerShell Invoke-WebRequest check also failed with:
+
+Unable to connect to the remote server
+
+No screenshots or trace files were produced because the target site could not be reached from this sandboxed environment.
