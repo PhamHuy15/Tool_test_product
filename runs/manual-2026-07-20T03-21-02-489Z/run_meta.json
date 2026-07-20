@@ -1,0 +1,13 @@
+{
+  "runId": "manual-2026-07-20T03-21-02-489Z",
+  "kind": "manual-test-cases",
+  "startedAt": "2026-07-20T03:21:02.495Z",
+  "status": "completed",
+  "targetUrl": "https://example.com",
+  "siteType": "landing",
+  "testScope": [
+    "content",
+    "ui",
+    "responsive"
+  ]
+}

@@ -18,6 +18,16 @@ const downloadFixPlan = document.querySelector("#downloadFixPlan");
 const downloadComparisonReport = document.querySelector("#downloadComparisonReport");
 const downloadPagePairs = document.querySelector("#downloadPagePairs");
 
+// Test Cases Selectors
+const manualJsonInput = document.querySelector("#manualJsonInput");
+const manualRunButton = document.querySelector("#manualRunButton");
+const manualClearButton = document.querySelector("#manualClearButton");
+const manualLoadSampleJson = document.querySelector("#manualLoadSampleJson");
+const manualUploadJsonFile = document.querySelector("#manualUploadJsonFile");
+const testCasesOutput = document.querySelector("#testCasesOutput");
+const downloadTestCasesMd = document.querySelector("#downloadTestCasesMd");
+const downloadTestCasesCsv = document.querySelector("#downloadTestCasesCsv");
+
 // New UI Selectors
 const loadSampleJson = document.querySelector("#loadSampleJson");
 const uploadJsonFile = document.querySelector("#uploadJsonFile");
@@ -78,6 +88,11 @@ compareClearButton.addEventListener("click", () => {
   resetOutput();
 });
 
+manualClearButton.addEventListener("click", () => {
+  manualJsonInput.value = "";
+  resetOutput();
+});
+
 // Run AI Test Action
 runButton.addEventListener("click", async () => {
   resetOutput();
@@ -118,6 +133,50 @@ runButton.addEventListener("click", async () => {
   } catch (error) {
     setRunning(false);
     setStatus(error.message || "Không thể chạy AI Test.", "error");
+    appendLog(error.stack || error.message);
+  }
+});
+
+// Run Manual Test Case Action
+manualRunButton.addEventListener("click", async () => {
+  resetOutput();
+  activatePanel("logPanel");
+
+  let testPackageJson;
+  try {
+    testPackageJson = JSON.parse(manualJsonInput.value);
+  } catch (error) {
+    setStatus(`JSON không hợp lệ: ${error.message}`, "error");
+    return;
+  }
+
+  setRunning(true, "manual-test-cases");
+  setStatus("Đang khởi tạo phiên tạo test case thủ công...", "running");
+
+  if (eventSource) {
+    eventSource.close();
+    eventSource = null;
+  }
+
+  try {
+    const response = await fetch("/api/run-manual-test-cases", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ testPackageJson })
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error([data.error, data.detail].filter(Boolean).join("\n"));
+    }
+
+    currentRunId = data.runId;
+    appendLog(`Run ID: ${data.runId}`);
+    connectEvents(data.runId);
+    await loadHistory();
+  } catch (error) {
+    setRunning(false);
+    setStatus(error.message || "Không thể tạo test case.", "error");
     appendLog(error.stack || error.message);
   }
 });
@@ -187,6 +246,30 @@ uploadJsonFile.addEventListener("change", (e) => {
     try {
       const parsed = JSON.parse(event.target.result);
       jsonInput.value = JSON.stringify(parsed, null, 2);
+      setStatus(`Tải file JSON "${file.name}" thành công.`, "success");
+    } catch (err) {
+      setStatus(`File JSON không hợp lệ: ${err.message}`, "error");
+    }
+  };
+  reader.readAsText(file);
+});
+
+// Manual JSON Input Helpers
+manualLoadSampleJson.addEventListener("click", () => {
+  manualJsonInput.value = JSON.stringify(SAMPLE_JSON, null, 2);
+  manualJsonInput.focus();
+  setStatus("Đã tải dữ liệu JSON mẫu.", "idle");
+});
+
+manualUploadJsonFile.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const parsed = JSON.parse(event.target.result);
+      manualJsonInput.value = JSON.stringify(parsed, null, 2);
       setStatus(`Tải file JSON "${file.name}" thành công.`, "success");
     } catch (err) {
       setStatus(`File JSON không hợp lệ: ${err.message}`, "error");
@@ -272,9 +355,10 @@ function renderHistoryList(history) {
 
   historyList.innerHTML = history.map(run => {
     const isCompare = run.kind === "content-comparison";
+    const isManual = run.kind === "manual-test-cases";
     const date = formatTimestamp(run.startedAt);
-    const label = isCompare ? "Compare" : "AI Test";
-    const badgeClass = isCompare ? "compare" : "ai-test";
+    const label = isCompare ? "Compare" : isManual ? "Test Cases" : "AI Test";
+    const badgeClass = isCompare ? "compare" : isManual ? "manual-test-cases" : "ai-test";
     const isActive = run.runId === currentRunId ? "active" : "";
 
     let urlDisplay = run.targetUrl || "Chưa rõ URL";
@@ -371,7 +455,8 @@ async function selectRun(runId) {
 
     if (res.status === 202) {
       connectEvents(runId);
-      setRunning(true, runId.startsWith("compare-") ? "compare" : "ai-test");
+      const mode = runId.startsWith("compare-") ? "compare" : runId.startsWith("manual-") ? "manual-test-cases" : "ai-test";
+      setRunning(true, mode);
       setStatus("Phiên chạy đang tiếp diễn...", "running");
       return;
     }
@@ -388,7 +473,8 @@ async function selectRun(runId) {
     }
 
     renderResult(data);
-    setStatus(data.kind === "content-comparison" ? "Hoàn tất so sánh nội dung." : "Hoàn tất AI Test.", "success");
+    const statusMsg = data.kind === "content-comparison" ? "Hoàn tất so sánh nội dung." : data.kind === "manual-test-cases" ? "Hoàn tất tạo test case." : "Hoàn tất AI Test.";
+    setStatus(statusMsg, "success");
     setRunning(false);
   } catch (error) {
     setStatus(error.message || "Lỗi tải kết quả.", "error");
@@ -427,8 +513,9 @@ function connectEvents(runId) {
     if (eventSource === source) eventSource = null;
     renderResult(event.payload);
     setRunning(false);
+    const statusMsg = event.payload.kind === "content-comparison" ? "Hoàn tất so sánh nội dung." : event.payload.kind === "manual-test-cases" ? "Hoàn tất tạo test case." : "Hoàn tất AI Test.";
     setStatus(
-      event.payload.kind === "content-comparison" ? "Hoàn tất so sánh nội dung." : "Hoàn tất AI Test.",
+      statusMsg,
       "success"
     );
     loadHistory();
@@ -450,9 +537,42 @@ function renderResult(result) {
   if (result.kind === "content-comparison") {
     renderContentComparisonResult(result);
     return;
+  } else if (result.kind === "manual-test-cases") {
+    renderManualTestCasesResult(result);
+    return;
   }
 
   renderAiTestResult(result);
+}
+
+function renderManualTestCasesResult(result) {
+  const images = result.evidenceImages || [];
+  evidenceGrid.classList.toggle("empty", images.length === 0);
+  evidenceGrid.innerHTML = images.length
+    ? images
+        .map(
+          (image) => `
+            <figure>
+              <img src="${escapeHtml(image.url)}" alt="${escapeHtml(image.fileName)}" loading="lazy" />
+              <figcaption>${escapeHtml(image.fileName)}</figcaption>
+            </figure>
+          `
+        )
+        .join("")
+    : "Không có ảnh chụp lỗi trong thiết kế test case.";
+
+  testCasesOutput.innerHTML = marked.parse(result.testCasesMd || "_Không có nội dung._");
+  downloadTestCasesMd.href = result.files.testCasesReport;
+  downloadTestCasesMd.classList.remove("hidden");
+
+  if (result.files.testCasesCsv) {
+    downloadTestCasesCsv.href = result.files.testCasesCsv;
+    downloadTestCasesCsv.classList.remove("hidden");
+  }
+
+  appendLog(`Thư mục run: ${result.runFolder}`);
+  updateTabVisibility("manual-test-cases", images.length > 0);
+  activatePanel("testCasesPanel");
 }
 
 function renderAiTestResult(result) {
@@ -561,10 +681,13 @@ function resetOutput() {
   reportOutput.innerHTML = "";
   fixOutput.innerHTML = "";
   comparisonReportOutput.innerHTML = "";
+  testCasesOutput.innerHTML = "";
   downloadReport.classList.add("hidden");
   downloadFixPlan.classList.add("hidden");
   downloadComparisonReport.classList.add("hidden");
   downloadPagePairs.classList.add("hidden");
+  downloadTestCasesMd.classList.add("hidden");
+  downloadTestCasesCsv.classList.add("hidden");
   updateTabVisibility("reset");
   setStatus("Sẵn sàng.", "idle");
 }
@@ -584,10 +707,16 @@ function setRunning(isRunning, mode = "") {
   sourceUrlInput.disabled = isRunning;
   targetUrlInput.disabled = isRunning;
 
+  manualRunButton.disabled = isRunning;
+  manualClearButton.disabled = isRunning;
+  manualJsonInput.disabled = isRunning;
+
   const runSpinner = runButton.querySelector(".btn-spinner");
   const runText = runButton.querySelector(".btn-text");
   const compareSpinner = compareButton.querySelector(".btn-spinner");
   const compareText = compareButton.querySelector(".btn-text");
+  const manualSpinner = manualRunButton.querySelector(".btn-spinner");
+  const manualText = manualRunButton.querySelector(".btn-text");
 
   if (isRunning) {
     if (mode === "ai-test") {
@@ -596,12 +725,17 @@ function setRunning(isRunning, mode = "") {
     } else if (mode === "compare") {
       compareSpinner.classList.remove("hidden");
       compareText.textContent = "Đang so sánh...";
+    } else if (mode === "manual-test-cases") {
+      manualSpinner.classList.remove("hidden");
+      manualText.textContent = "Đang tạo...";
     }
   } else {
     runSpinner.classList.add("hidden");
     runText.textContent = "Chạy AI Test";
     compareSpinner.classList.add("hidden");
     compareText.textContent = "So Sánh Nội Dung";
+    manualSpinner.classList.add("hidden");
+    manualText.textContent = "Tạo Test Case";
   }
 }
 
@@ -676,20 +810,34 @@ function updateTabVisibility(kind, hasImages = false) {
   const tabEvidence = document.querySelector('.tab[data-target="evidencePanel"]');
   const tabReport = document.querySelector('.tab[data-target="reportPanel"]');
   const tabFix = document.querySelector('.tab[data-target="fixPanel"]');
+  const tabTestCases = document.querySelector('.tab[data-target="testCasesPanel"]');
 
-  if (!tabLog || !tabPairs || !tabComparison || !tabEvidence || !tabReport || !tabFix) return;
+  if (!tabLog || !tabPairs || !tabComparison || !tabEvidence || !tabReport || !tabFix || !tabTestCases) return;
 
   if (kind === "ai-test") {
     tabPairs.classList.add("hidden");
     tabComparison.classList.add("hidden");
+    tabTestCases.classList.add("hidden");
     tabReport.classList.remove("hidden");
     tabFix.classList.remove("hidden");
     tabEvidence.classList.remove("hidden");
   } else if (kind === "content-comparison") {
     tabPairs.classList.remove("hidden");
     tabComparison.classList.remove("hidden");
+    tabTestCases.classList.add("hidden");
     tabReport.classList.add("hidden");
     tabFix.classList.add("hidden");
+    if (hasImages) {
+      tabEvidence.classList.remove("hidden");
+    } else {
+      tabEvidence.classList.add("hidden");
+    }
+  } else if (kind === "manual-test-cases") {
+    tabPairs.classList.add("hidden");
+    tabComparison.classList.add("hidden");
+    tabReport.classList.add("hidden");
+    tabFix.classList.add("hidden");
+    tabTestCases.classList.remove("hidden");
     if (hasImages) {
       tabEvidence.classList.remove("hidden");
     } else {
@@ -701,5 +849,6 @@ function updateTabVisibility(kind, hasImages = false) {
     tabReport.classList.remove("hidden");
     tabFix.classList.remove("hidden");
     tabEvidence.classList.remove("hidden");
+    tabTestCases.classList.remove("hidden");
   }
 }

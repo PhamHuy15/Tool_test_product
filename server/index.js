@@ -129,6 +129,103 @@ app.post("/api/run-test", async (req, res) => {
   }
 });
 
+app.post("/api/run-manual-test-cases", async (req, res) => {
+  try {
+    if (activeRunId) {
+      res.status(409).json({
+        success: false,
+        error:
+          "Đang có một phiên AI Test/Tạo Test Case chạy. Vui lòng chờ phiên hiện tại kết thúc.",
+      });
+      return;
+    }
+
+    const testPackageJson = req.body?.testPackageJson;
+    const validationError = validateTestPackage(testPackageJson);
+    if (validationError) {
+      res.status(400).json({ success: false, error: validationError });
+      return;
+    }
+
+    const codexError = await ensureCodexReady();
+    if (codexError) {
+      res.status(500).json({
+        success: false,
+        error: codexError.message,
+        detail: codexError.detail,
+      });
+      return;
+    }
+
+    const runId = makeRunId("manual");
+    const runDir = path.join(runsDir, runId);
+    await fs.mkdir(runDir, { recursive: true });
+
+    const [testPrompt, workflow] = await Promise.all([
+      fs.readFile(path.join(promptsDir, "manual-test-cases-prompt.md"), "utf8"),
+      fs.readFile(path.join(promptsDir, "workflow.md"), "utf8"),
+    ]);
+
+    const jsonBlock = JSON.stringify(testPackageJson, null, 2);
+    const promptWithJson = testPrompt.replace(
+      "<paste JSON test package ở đây>",
+      jsonBlock,
+    );
+    const combinedPrompt = `${promptWithJson}\n\n---\n\n${workflow}\n`;
+
+    await Promise.all([
+      fs.writeFile(
+        path.join(runDir, "combined-prompt.txt"),
+        combinedPrompt,
+        "utf8",
+      ),
+      fs.writeFile(
+        path.join(runDir, "SENIOR_TESTER_WORKFLOW.md"),
+        workflow,
+        "utf8",
+      ),
+    ]);
+
+    const runState = {
+      runId,
+      kind: "manual-test-cases",
+      status: "running",
+      startedAt: new Date().toISOString(),
+      events: [],
+      clients: new Set(),
+      result: null,
+      error: null,
+    };
+
+    runs.set(runId, runState);
+    activeRunId = runId;
+
+    // Write initial metadata
+    await writeRunMetadata(runDir, {
+      runId,
+      kind: "manual-test-cases",
+      startedAt: runState.startedAt,
+      status: "running",
+      targetUrl: testPackageJson.targetUrl,
+      siteType: testPackageJson.siteType,
+      testScope: testPackageJson.testScope,
+    });
+
+    startCodexRun(runState, runDir, combinedPrompt, collectManualTestCasesRunResult, {
+      completionFiles: ["MANUAL_TEST_CASES.md", "manual_test_cases.csv"],
+    });
+
+    res.json({ success: true, runId });
+  } catch (error) {
+    activeRunId = null;
+    res.status(500).json({
+      success: false,
+      error: "Không thể khởi tạo phiên tạo test case.",
+      detail: error.message,
+    });
+  }
+});
+
 app.post("/api/compare-content", async (req, res) => {
   try {
     if (activeRunId) {
@@ -292,10 +389,16 @@ app.get("/api/runs/:runId/result", async (req, res) => {
     }
 
     const isCompare = req.params.runId.startsWith("compare-");
+    const isManual = req.params.runId.startsWith("manual-");
     try {
       let result;
       if (isCompare) {
         result = await collectContentComparisonRunResult(
+          req.params.runId,
+          runDir,
+        );
+      } else if (isManual) {
+        result = await collectManualTestCasesRunResult(
           req.params.runId,
           runDir,
         );
@@ -400,6 +503,8 @@ app.get("/api/runs/:runId/files/:fileName", async (req, res) => {
     "CONTENT_COMPARISON_REPORT.md",
     "page_pairs.csv",
     "combined-prompt.txt",
+    "MANUAL_TEST_CASES.md",
+    "manual_test_cases.csv",
   ]);
   if (!runState || !allowed.has(req.params.fileName)) {
     res.status(404).end("Không tìm thấy file.");
@@ -580,6 +685,43 @@ async function collectContentComparisonRunResult(runId, runDir) {
     files: {
       contentComparisonReport: `/api/runs/${encodeURIComponent(runId)}/files/CONTENT_COMPARISON_REPORT.md`,
       pagePairs: `/api/runs/${encodeURIComponent(runId)}/files/page_pairs.csv`,
+      combinedPrompt: `/api/runs/${encodeURIComponent(runId)}/files/combined-prompt.txt`,
+    },
+    runFolder: path.join(runsDir, runId),
+  };
+}
+
+async function collectManualTestCasesRunResult(runId, runDir) {
+  const testCasesMdPath = path.join(runDir, "MANUAL_TEST_CASES.md");
+  const testCasesCsvPath = path.join(runDir, "manual_test_cases.csv");
+  const [testCasesMd, testCasesCsv] = await Promise.all([
+    readRequiredFile(
+      testCasesMdPath,
+      "Không tìm thấy MANUAL_TEST_CASES.md sau khi Codex chạy xong.",
+    ),
+    fs.readFile(testCasesCsvPath, "utf8").catch(() => ""),
+  ]);
+
+  const evidenceDir = path.join(runDir, "TEST_EVIDENCE");
+  const imageNames = await fs
+    .readdir(evidenceDir)
+    .then((files) =>
+      files.filter((file) => /\.(png|jpe?g|webp|gif)$/i.test(file)).sort(),
+    )
+    .catch(() => []);
+
+  return {
+    kind: "manual-test-cases",
+    runId,
+    testCasesMd,
+    testCasesCsv,
+    evidenceImages: imageNames.map((fileName) => ({
+      fileName,
+      url: `/runs/${encodeURIComponent(runId)}/evidence/${encodeURIComponent(fileName)}`,
+    })),
+    files: {
+      testCasesReport: `/api/runs/${encodeURIComponent(runId)}/files/MANUAL_TEST_CASES.md`,
+      testCasesCsv: `/api/runs/${encodeURIComponent(runId)}/files/manual_test_cases.csv`,
       combinedPrompt: `/api/runs/${encodeURIComponent(runId)}/files/combined-prompt.txt`,
     },
     runFolder: path.join(runsDir, runId),
@@ -821,7 +963,7 @@ function makeRunId(prefix = "") {
 }
 
 function isSafeRunId(value) {
-  return /^(compare-)?\d{4}-\d{2}-\d{2}T[\d-]+Z$/.test(value);
+  return /^(compare-|manual-)?\d{4}-\d{2}-\d{2}T[\d-]+Z$/.test(value);
 }
 
 async function writeRunMetadata(runDir, meta) {
@@ -846,9 +988,10 @@ async function updateRunMetaStatus(runDir, status, errorMsg = null) {
     } catch {
       const runId = path.basename(runDir);
       const isCompare = runId.startsWith("compare-");
+      const isManual = runId.startsWith("manual-");
       meta = {
         runId,
-        kind: isCompare ? "content-comparison" : "ai-test",
+        kind: isCompare ? "content-comparison" : isManual ? "manual-test-cases" : "ai-test",
         startedAt: new Date().toISOString(),
       };
     }
@@ -870,7 +1013,8 @@ async function getRunMetadata(runId) {
     return JSON.parse(data);
   } catch {
     const isCompare = runId.startsWith("compare-");
-    const kind = isCompare ? "content-comparison" : "ai-test";
+    const isManual = runId.startsWith("manual-");
+    const kind = isCompare ? "content-comparison" : isManual ? "manual-test-cases" : "ai-test";
 
     let startedAt = "";
     try {
@@ -890,20 +1034,21 @@ async function getRunMetadata(runId) {
     let sourceUrl = "";
     let status = "failed";
 
-    if (kind === "ai-test") {
+    if (kind === "ai-test" || kind === "manual-test-cases") {
+      const mainReportFile = kind === "manual-test-cases" ? "MANUAL_TEST_CASES.md" : "TEST_REPORT.md";
       const reportExists = await fs
-        .stat(path.join(runDir, "TEST_REPORT.md"))
+        .stat(path.join(runDir, mainReportFile))
         .then((s) => s.isFile())
         .catch(() => false);
       if (reportExists) {
         status = "completed";
         try {
           const reportContent = await fs.readFile(
-            path.join(runDir, "TEST_REPORT.md"),
+            path.join(runDir, mainReportFile),
             "utf8",
           );
-          const match = reportContent.match(/# Test Report —\s*(.*)/i);
-          if (match) targetUrl = match[1].trim();
+          const match = reportContent.match(/# (Test Report|Tài Liệu Test Cases Kiểm Thử Thủ Công) —\s*(.*)/i);
+          if (match) targetUrl = match[2].trim();
         } catch {}
       }
       if (!targetUrl) {

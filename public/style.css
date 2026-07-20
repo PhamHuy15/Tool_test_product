@@ -108,13 +108,14 @@ h1 {
   font-weight: 700;
   background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 /* Tab selectors for modes */
 .mode-tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 4px;
   padding: 3px;
   border: 1px solid var(--line);
@@ -471,6 +472,11 @@ button:disabled {
 .history-kind-badge.compare {
   background: rgba(6, 182, 212, 0.15);
   color: var(--accent-cyan);
+}
+
+.history-kind-badge.manual-test-cases {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning);
 }
 
 .history-url {

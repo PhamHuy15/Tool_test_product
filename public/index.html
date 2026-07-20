@@ -45,6 +45,13 @@
             >
               So Sánh Nội Dung
             </button>
+            <button
+              class="mode-tab"
+              data-mode-target="manualTestSection"
+              type="button"
+            >
+              Viết Test Case
+            </button>
           </div>
 
           <section id="aiTestSection" class="mode-section active">
@@ -128,6 +135,50 @@
             </div>
           </section>
 
+          <section id="manualTestSection" class="mode-section">
+            <div class="field-header">
+              <label for="manualJsonInput">JSON test package</label>
+              <div class="textarea-actions">
+                <button id="manualLoadSampleJson" class="action-link" type="button">
+                  JSON Mẫu
+                </button>
+                <label for="manualUploadJsonFile" class="action-link file-label">
+                  Tải File
+                  <input
+                    id="manualUploadJsonFile"
+                    type="file"
+                    accept=".json"
+                    style="display: none"
+                  />
+                </label>
+              </div>
+            </div>
+            <textarea
+              id="manualJsonInput"
+              spellcheck="false"
+              placeholder='{
+  "targetUrl": "https://example.com",
+  "siteType": "landing",
+  "testScope": ["content", "ui"],
+  "pageSnapshot": {}
+}'
+            ></textarea>
+
+            <p class="note">
+              Sinh bộ test case kiểm thử thủ công chi tiết dựa trên phân tích website thực tế.
+            </p>
+
+            <div class="actions">
+              <button id="manualRunButton" type="button">
+                <span class="btn-spinner hidden"></span>
+                <span class="btn-text">Tạo Test Case</span>
+              </button>
+              <button id="manualClearButton" type="button" class="secondary">
+                Xóa
+              </button>
+            </div>
+          </section>
+
           <div id="status" class="status idle">Sẵn sàng.</div>
 
           <!-- Lịch sử các phiên chạy -->
@@ -181,6 +232,9 @@
             </button>
             <button class="tab" data-target="fixPanel" type="button">
               Fix Plan
+            </button>
+            <button class="tab" data-target="testCasesPanel" type="button">
+              Test Cases
             </button>
           </div>
 
@@ -270,6 +324,18 @@
               >
             </div>
             <article id="fixOutput" class="markdown"></article>
+          </section>
+
+          <section id="testCasesPanel" class="panel">
+            <div class="panel-toolbar" style="gap: 8px;">
+              <a id="downloadTestCasesMd" class="download hidden" href="#"
+                >Tải MANUAL_TEST_CASES.md</a
+              >
+              <a id="downloadTestCasesCsv" class="download hidden" href="#"
+                >Tải manual_test_cases.csv</a
+              >
+            </div>
+            <article id="testCasesOutput" class="markdown"></article>
           </section>
         </article>
       </section>
