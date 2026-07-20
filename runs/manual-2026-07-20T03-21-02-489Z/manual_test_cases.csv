@@ -1,4 +1,0 @@
-Test Case ID,Component,Title,Preconditions,Steps,Expected Result,Severity,Priority
-"TC_UI_001","Trang chủ","Kiểm tra hiển thị tiêu đề chính","Trang load xong thành công","1. Mở trang chủ targetUrl\n2. Kiểm tra font chữ, cỡ chữ tiêu đề chính","Tiêu đề ""Example Domain"" hiển thị đúng kiểu chữ Outfit, căn giữa, không lỗi font","High","P0"
-"TC_FUNC_002","Trang chủ","Kiểm tra liên kết ""More information...""","Trang load xong thành công","1. Di chuyển chuột đến link ""More information...""\n2. Bấm vào liên kết","Trang web chuyển hướng an toàn tới tên miền của IANA (https://www.iana.org/domains/reserved)","Critical","P0"
-"TC_RESP_003","Mobile Layout","Kiểm tra hiển thị trên Mobile 375px","Thiết bị hoặc giả lập iPhone X/12","1. Resize màn hình về chiều rộng 375px\n2. Kiểm tra khoảng cách lề và kích thước chữ","Toàn bộ chữ và hình nằm trọn trong khung hình, không xuất hiện thanh cuộn ngang","Medium","P1"

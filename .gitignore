@@ -1,0 +1,13 @@
+# Node dependencies
+/server/node_modules/
+
+# Local execution reports and logs
+/runs/
+/work-logs/
+*.log
+
+# Editor configurations and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
