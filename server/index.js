@@ -3,6 +3,11 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkCodexCli, runCodexExec } from "./runCodex.js";
+import { inspectArtifacts } from "./artifacts.js";
+import { isSafeFilename, validatePublicHttpUrl } from "./security.js";
+import { checkPlaywright, captureViewports } from "./browserRunner.js";
+import { crawlSite } from "./siteCrawler.js";
+import { analyzeContent } from "./contentAnalyzer.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +17,10 @@ const promptsDir = path.join(appRoot, "prompts");
 const runsDir = path.join(appRoot, "runs");
 const PORT = Number(process.env.PORT || 4545);
 const HOST = "127.0.0.1";
+const APP_VERSION = "1.1.0";
+const RUN_TIMEOUT_MS = Number(process.env.RUN_TIMEOUT_MS || 30 * 60 * 1000);
+const MAX_EVENTS = Number(process.env.MAX_EVENTS || 2000);
+const RUN_RETENTION_DAYS = Number(process.env.RUN_RETENTION_DAYS || 30);
 
 const runs = new Map();
 let activeRunId = null;
@@ -46,7 +55,7 @@ app.post("/api/run-test", async (req, res) => {
     }
 
     const testPackageJson = req.body?.testPackageJson;
-    const validationError = validateTestPackage(testPackageJson);
+    const validationError = await validateTestPackage(testPackageJson);
     if (validationError) {
       res.status(400).json({ success: false, error: validationError });
       return;
@@ -116,7 +125,9 @@ app.post("/api/run-test", async (req, res) => {
       testScope: testPackageJson.testScope,
     });
 
-    startCodexRun(runState, runDir, combinedPrompt, collectAiTestRunResult);
+    prepareSingleSiteRun(runState, runDir, combinedPrompt, testPackageJson.targetUrl, "ai-test").catch((error) => {
+      finishFailed(runState, `Browser snapshot failed: ${error.message}`);
+    });
 
     res.json({ success: true, runId });
   } catch (error) {
@@ -141,7 +152,7 @@ app.post("/api/run-manual-test-cases", async (req, res) => {
     }
 
     const testPackageJson = req.body?.testPackageJson;
-    const validationError = validateTestPackage(testPackageJson);
+    const validationError = await validateTestPackage(testPackageJson);
     if (validationError) {
       res.status(400).json({ success: false, error: validationError });
       return;
@@ -211,8 +222,8 @@ app.post("/api/run-manual-test-cases", async (req, res) => {
       testScope: testPackageJson.testScope,
     });
 
-    startCodexRun(runState, runDir, combinedPrompt, collectManualTestCasesRunResult, {
-      completionFiles: ["MANUAL_TEST_CASES.md", "manual_test_cases.csv"],
+    prepareSingleSiteRun(runState, runDir, combinedPrompt, testPackageJson.targetUrl, "manual-test-cases").catch((error) => {
+      finishFailed(runState, `Browser snapshot failed: ${error.message}`);
     });
 
     res.json({ success: true, runId });
@@ -237,8 +248,8 @@ app.post("/api/compare-content", async (req, res) => {
       return;
     }
 
-    const source = parseHttpUrl(req.body?.sourceUrl);
-    const target = parseHttpUrl(req.body?.targetUrl);
+    const source = await parseHttpUrl(req.body?.sourceUrl);
+    const target = await parseHttpUrl(req.body?.targetUrl);
 
     if (!source.ok) {
       res.status(400).json({
@@ -318,15 +329,9 @@ Người dùng đã bấm "So Sánh Nội Dung" để so sánh toàn bộ site. 
       targetUrl: target.url.href,
     });
 
-    startCodexRun(
-      runState,
-      runDir,
-      combinedPrompt,
-      collectContentComparisonRunResult,
-      {
-        completionFiles: ["CONTENT_COMPARISON_REPORT.md", "page_pairs.csv"],
-      },
-    );
+    prepareContentComparisonRun(runState, runDir, combinedPrompt, source.url.href, target.url.href).catch((error) => {
+      finishFailed(runState, `Browser crawl failed: ${error.message}`);
+    });
 
     res.json({ success: true, runId });
   } catch (error) {
@@ -405,7 +410,14 @@ app.get("/api/runs/:runId/result", async (req, res) => {
       } else {
         result = await collectAiTestRunResult(req.params.runId, runDir);
       }
-      res.json({ success: true, ...result });
+      const artifactValidation = await inspectArtifacts(runDir, result.kind);
+      res.json({
+        success: true,
+        ...result,
+        status: artifactValidation.status,
+        artifacts: artifactValidation,
+        metrics: { ...(result.metrics || {}), evidence: artifactValidation.evidenceCount },
+      });
       return;
     } catch (error) {
       const meta = await getRunMetadata(req.params.runId).catch(() => ({
@@ -420,13 +432,18 @@ app.get("/api/runs/:runId/result", async (req, res) => {
     }
   }
 
-  if (runState.status === "running") {
+  if (["queued", "running", "crawling", "analyzing", "generating-report"].includes(runState.status)) {
     res.status(202).json({ success: false, status: "running" });
     return;
   }
 
   if (runState.status === "failed") {
     res.status(500).json({ success: false, error: runState.error });
+    return;
+  }
+
+  if (runState.status === "cancelled") {
+    res.status(409).json({ success: false, status: "cancelled", error: "Run was cancelled." });
     return;
   }
 
@@ -496,7 +513,6 @@ app.get("/api/runs/:runId/files/:fileName", async (req, res) => {
     return;
   }
 
-  const runState = runs.get(req.params.runId);
   const allowed = new Set([
     "TEST_REPORT.md",
     "FIX_PLAN.md",
@@ -505,13 +521,51 @@ app.get("/api/runs/:runId/files/:fileName", async (req, res) => {
     "combined-prompt.txt",
     "MANUAL_TEST_CASES.md",
     "manual_test_cases.csv",
+    "deterministic_analysis.json",
+    "browser_snapshot.json",
+    "crawl_manifest-source.json",
+    "crawl_manifest-target.json",
+    "crawl_errors-source.json",
+    "crawl_errors-target.json",
   ]);
-  if (!runState || !allowed.has(req.params.fileName)) {
+  if (!allowed.has(req.params.fileName) || !isSafeFilename(req.params.fileName)) {
     res.status(404).end("Không tìm thấy file.");
     return;
   }
 
-  res.download(path.join(runsDir, req.params.runId, req.params.fileName));
+  const filePath = path.join(runsDir, req.params.runId, req.params.fileName);
+  const exists = await fs.stat(filePath).then((stat) => stat.isFile()).catch(() => false);
+  if (!exists) {
+    res.status(404).end("File not found.");
+    return;
+  }
+  res.download(filePath);
+});
+
+app.post("/api/runs/:runId/cancel", (req, res) => {
+  if (!isSafeRunId(req.params.runId)) {
+    res.status(400).json({ success: false, error: "Invalid run ID." });
+    return;
+  }
+  const runState = runs.get(req.params.runId);
+  if (!runState || !["running", "queued", "crawling", "analyzing", "generating-report"].includes(runState.status)) {
+    res.status(409).json({ success: false, error: "Run is no longer active." });
+    return;
+  }
+  runState.cancel?.();
+  res.json({ success: true, runId: runState.runId, status: "cancelling" });
+});
+
+app.get("/api/health", async (req, res) => {
+  const [codex, playwright] = await Promise.all([ensureCodexReady(), checkPlaywright()]);
+  const degraded = Boolean(codex) || !playwright.ok;
+  res.status(degraded ? 503 : 200).json({
+    success: !degraded,
+    status: degraded ? "degraded" : "ok",
+    activeRunId,
+    codex: codex ? { ok: false, error: codex.message } : { ok: true },
+    playwright,
+  });
 });
 
 app.get("/runs/:runId/evidence/:filename", async (req, res) => {
@@ -550,6 +604,92 @@ app.listen(PORT, HOST, () => {
   console.log(`Local AI Test Web chạy tại http://${HOST}:${PORT}`);
 });
 
+cleanupOldRuns().catch((error) => console.error("Run cleanup failed:", error));
+
+process.on("SIGINT", () => {
+  const active = activeRunId && runs.get(activeRunId);
+  active?.cancel?.();
+  setTimeout(() => process.exit(0), 250);
+});
+process.on("SIGTERM", () => {
+  const active = activeRunId && runs.get(activeRunId);
+  active?.cancel?.();
+  setTimeout(() => process.exit(0), 250);
+});
+
+async function cleanupOldRuns() {
+  if (!Number.isFinite(RUN_RETENTION_DAYS) || RUN_RETENTION_DAYS <= 0) return;
+  const cutoff = Date.now() - RUN_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+  const entries = await fs.readdir(runsDir, { withFileTypes: true }).catch(() => []);
+  for (const entry of entries) {
+    if (!entry.isDirectory() || !isSafeRunId(entry.name)) continue;
+    const runDir = path.join(runsDir, entry.name);
+    const stat = await fs.stat(runDir).catch(() => null);
+    if (stat && stat.mtimeMs < cutoff && entry.name !== activeRunId) {
+      await fs.rm(runDir, { recursive: true, force: true }).catch(() => {});
+      runs.delete(entry.name);
+    }
+  }
+}
+
+async function prepareSingleSiteRun(runState, runDir, basePrompt, targetUrl, kind) {
+  runState.cancel = () => { runState.cancelRequested = true; };
+  runState.status = "crawling";
+  await updateRunMetaStatus(runDir, "crawling");
+  emit(runState, { type: "status", payload: "Playwright đang khảo sát target site..." });
+  const crawl = await crawlSite({ runDir, startUrl: targetUrl, phase: "target", isCancelled: () => runState.cancelRequested, onProgress: (payload) => emit(runState, { type: "crawl-progress", payload }) });
+  if (runState.cancelRequested) { runState.status = "cancelled"; activeRunId = null; await updateRunMetaStatus(runDir, "cancelled"); emit(runState, { type: "cancelled", payload: "Run cancelled by user." }); return; }
+  const viewports = kind === "ai-test" ? await captureViewports({ runDir, url: targetUrl, onProgress: (payload) => emit(runState, { type: "crawl-progress", payload }) }) : [];
+  const compact = crawl.pages.map((page) => ({
+    url: page.url,
+    statusCode: page.statusCode,
+    title: page.title,
+    description: page.description,
+    headings: page.headings,
+    text: page.text.slice(0, 5_000),
+    links: page.links.slice(0, 100),
+    forms: page.forms,
+    buttons: page.buttons,
+    errors: page.errors,
+    screenshot: page.screenshot,
+  }));
+  runState.status = "generating-report";
+  await updateRunMetaStatus(runDir, "generating-report");
+  await fs.writeFile(path.join(runDir, "browser_snapshot.json"), JSON.stringify({ kind, targetUrl, pages: compact, viewports, errors: crawl.errors, manifest: crawl.manifest }, null, 2), "utf8");
+  const browserContext = `\n\n---\n\n## PLAYWRIGHT BROWSER SNAPSHOT\n\nUse this snapshot as the primary browser evidence. Do not recrawl the whole site with Codex; only perform a focused read-only validation when a screenshot or interaction needs confirmation.\n\n${JSON.stringify({ pages: compact, viewports, errors: crawl.errors }, null, 2)}\n`;
+  emit(runState, { type: "status", payload: "Playwright khảo sát xong; Codex đang tạo báo cáo..." });
+  const options = kind === "manual-test-cases" ? { completionFiles: ["MANUAL_TEST_CASES.md", "manual_test_cases.csv"] } : {};
+  startCodexRun(runState, runDir, `${basePrompt}${browserContext}`, kind === "manual-test-cases" ? collectManualTestCasesRunResult : collectAiTestRunResult, options);
+}
+
+async function prepareContentComparisonRun(runState, runDir, basePrompt, sourceUrl, targetUrl) {
+  runState.cancel = () => { runState.cancelRequested = true; };
+  runState.status = "crawling";
+  await updateRunMetaStatus(runDir, "crawling");
+  emit(runState, { type: "status", payload: "Playwright đang crawl site nguồn và site đích..." });
+  const sourceCrawl = await crawlSite({ runDir, startUrl: sourceUrl, phase: "source", isCancelled: () => runState.cancelRequested, onProgress: (payload) => emit(runState, { type: "crawl-progress", payload }) });
+  if (runState.cancelRequested) { runState.status = "cancelled"; activeRunId = null; await updateRunMetaStatus(runDir, "cancelled"); emit(runState, { type: "cancelled", payload: "Run cancelled by user." }); return; }
+  const targetCrawl = await crawlSite({ runDir, startUrl: targetUrl, phase: "target", isCancelled: () => runState.cancelRequested, onProgress: (payload) => emit(runState, { type: "crawl-progress", payload }) });
+  if (runState.cancelRequested) { runState.status = "cancelled"; activeRunId = null; await updateRunMetaStatus(runDir, "cancelled"); emit(runState, { type: "cancelled", payload: "Run cancelled by user." }); return; }
+  const analysis = analyzeContent(sourceCrawl.pages, targetCrawl.pages);
+  runState.status = "analyzing";
+  await updateRunMetaStatus(runDir, "analyzing");
+  await fs.writeFile(path.join(runDir, "deterministic_analysis.json"), JSON.stringify(analysis, null, 2), "utf8");
+  await fs.writeFile(path.join(runDir, "page_pairs.csv"), [
+    "source_url,target_url,match_confidence",
+    ...analysis.pairs.map((pair) => `${csvCell(pair.sourceUrl)},${csvCell(pair.targetUrl)},${csvCell(pair.matchConfidence)}`),
+  ].join("\n"), "utf8");
+  const browserContext = `\n\n---\n\n## PLAYWRIGHT DETERMINISTIC INPUT\n\nUse these deterministic Playwright results as the primary crawl input. Do not recrawl the full sites with Codex. Only perform focused read-only semantic validation if necessary.\n\n${JSON.stringify(analysis, null, 2)}\n\nSource crawl errors: ${JSON.stringify(sourceCrawl.errors)}\nTarget crawl errors: ${JSON.stringify(targetCrawl.errors)}\n`;
+  emit(runState, { type: "status", payload: "Playwright crawl hoàn tất; Codex đang phân tích semantic..." });
+  startCodexRun(runState, runDir, `${basePrompt}${browserContext}`, collectContentComparisonRunResult, {
+    completionFiles: ["CONTENT_COMPARISON_REPORT.md", "page_pairs.csv"],
+  });
+}
+
+function csvCell(value) {
+  return `"${String(value || "").replaceAll('"', '""')}"`;
+}
+
 function startCodexRun(
   runState,
   runDir,
@@ -561,19 +701,33 @@ function startCodexRun(
   const codex = runCodexExec({ cwd: runDir, prompt: combinedPrompt });
   let finalized = false;
   let completionWatcher = null;
+  const timeout = setTimeout(() => failRun(`Run exceeded the ${Math.round(RUN_TIMEOUT_MS / 60000)} minute timeout.`), RUN_TIMEOUT_MS);
+  runState.cancel = () => {
+    if (finalized) return;
+    finalized = true;
+    clearTimeout(timeout);
+    if (completionWatcher) clearInterval(completionWatcher);
+    runState.status = "cancelled";
+    codex.killTree?.();
+    updateRunMetaStatus(runDir, "cancelled").catch(() => {});
+    emit(runState, { type: "cancelled", payload: "Run cancelled by user." });
+    if (activeRunId === runState.runId) activeRunId = null;
+  };
 
   const completeRun = async (reason) => {
     if (finalized) return;
     finalized = true;
+    clearTimeout(timeout);
     if (completionWatcher) clearInterval(completionWatcher);
 
     try {
       const result = await collectResult(runState.runId, runDir);
-      runState.status = "completed";
-      runState.result = result;
-      await updateRunMetaStatus(runDir, "completed").catch(() => {});
+      const artifacts = await inspectArtifacts(runDir, runState.kind);
+      runState.status = artifacts.status;
+      runState.result = { ...result, status: artifacts.status, artifacts, metrics: { ...(result.metrics || {}), evidence: artifacts.evidenceCount } };
+      await updateRunMetaStatus(runDir, artifacts.status).catch(() => {});
       emit(runState, { type: "status", payload: reason });
-      emit(runState, { type: "complete", payload: result });
+      emit(runState, { type: "complete", payload: runState.result });
       if (codex.killTree) codex.killTree();
     } catch (error) {
       finishFailed(runState, error.message);
@@ -585,7 +739,9 @@ function startCodexRun(
   const failRun = (message) => {
     if (finalized) return;
     finalized = true;
+    clearTimeout(timeout);
     if (completionWatcher) clearInterval(completionWatcher);
+    codex.killTree?.();
     finishFailed(runState, message);
   };
 
@@ -663,6 +819,9 @@ async function collectContentComparisonRunResult(runId, runDir) {
     ),
     fs.readFile(pairsPath, "utf8").catch(() => ""),
   ]);
+  const deterministicAnalysis = await fs.readFile(path.join(runDir, "deterministic_analysis.json"), "utf8")
+    .then((value) => JSON.parse(value))
+    .catch(() => null);
 
   const evidenceDir = path.join(runDir, "TEST_EVIDENCE");
   const imageNames = await fs
@@ -678,6 +837,8 @@ async function collectContentComparisonRunResult(runId, runDir) {
     contentComparisonReportMd,
     pagePairsCsv,
     pagePairs: parsePagePairsCsv(pagePairsCsv),
+    deterministicAnalysis,
+    metrics: deterministicAnalysis?.metrics || {},
     evidenceImages: imageNames.map((fileName) => ({
       fileName,
       url: `/runs/${encodeURIComponent(runId)}/evidence/${encodeURIComponent(fileName)}`,
@@ -799,7 +960,7 @@ function writeSse(res, event) {
   res.write(`data: ${JSON.stringify(event)}\n\n`);
 }
 
-function validateTestPackage(value) {
+async function validateTestPackage(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return "Body phải có dạng `{ testPackageJson: <object> }`.";
   }
@@ -821,6 +982,8 @@ function validateTestPackage(value) {
     return "Field `targetUrl` phải là URL hợp lệ.";
   }
 
+  const target = await validatePublicHttpUrl(value.targetUrl, "targetUrl");
+  if (!target.ok) return target.error;
   return null;
 }
 
@@ -836,16 +999,10 @@ async function ensureCodexReady() {
   };
 }
 
-function parseHttpUrl(value) {
-  if (typeof value !== "string" || !value.trim()) return { ok: false };
-
-  try {
-    const url = new URL(value.trim());
-    if (!["http:", "https:"].includes(url.protocol)) return { ok: false };
-    return { ok: true, url };
-  } catch {
-    return { ok: false };
-  }
+async function parseHttpUrl(value) {
+  const secure = await validatePublicHttpUrl(value);
+  if (!secure.ok) return { ok: false, error: secure.error };
+  return secure;
 }
 
 function applyContentComparisonTemplate(template, values) {
@@ -968,6 +1125,7 @@ function isSafeRunId(value) {
 
 async function writeRunMetadata(runDir, meta) {
   try {
+    meta = { appVersion: APP_VERSION, promptVersion: APP_VERSION, ...meta };
     await fs.writeFile(
       path.join(runDir, "run_meta.json"),
       JSON.stringify(meta, null, 2),

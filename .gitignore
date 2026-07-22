@@ -5,6 +5,8 @@
 /runs/
 /work-logs/
 *.log
+/installer/dist/
+/dist/
 
 # Editor configurations and OS files
 .DS_Store

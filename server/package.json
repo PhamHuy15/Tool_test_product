@@ -4,10 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "node --test test/*.test.js",
+    "check": "node --check index.js && node --check runCodex.js && node --check security.js && node --check artifacts.js",
+    "lint": "npm run check",
+    "setup:browsers": "npx playwright install chromium"
   },
   "dependencies": {
-    "express": "^4.19.2"
-  },
-  "devDependencies": {}
+    "express": "^4.19.2",
+    "playwright": "^1.55.1"
+  }
 }

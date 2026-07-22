@@ -7,6 +7,7 @@ const targetUrlInput = document.querySelector("#targetUrlInput");
 const compareButton = document.querySelector("#compareButton");
 const compareClearButton = document.querySelector("#compareClearButton");
 const statusBox = document.querySelector("#status");
+const cancelRunButton = document.querySelector("#cancelRunButton");
 const logOutput = document.querySelector("#logOutput");
 const evidenceGrid = document.querySelector("#evidenceGrid");
 const pairSummary = document.querySelector("#pairSummary");
@@ -42,6 +43,7 @@ const lightboxClose = document.querySelector(".lightbox-close");
 // Global states
 let currentRunId = null;
 let eventSource = null;
+let currentRunMode = "";
 
 // Sample JSON Template Helper
 const SAMPLE_JSON = {
@@ -300,6 +302,20 @@ refreshHistory.addEventListener("click", () => {
   loadHistory();
 });
 
+cancelRunButton.addEventListener("click", async () => {
+  if (!currentRunId) return;
+  cancelRunButton.disabled = true;
+  try {
+    const response = await fetch(`/api/runs/${encodeURIComponent(currentRunId)}/cancel`, { method: "POST" });
+    const data = await response.json();
+    if (!response.ok || !data.success) throw new Error(data.error || "Không thể hủy phiên.");
+    appendLog("Đã gửi yêu cầu hủy phiên.");
+  } catch (error) {
+    cancelRunButton.disabled = false;
+    setStatus(error.message, "error");
+  }
+});
+
 // Lightbox preview handlers
 evidenceGrid.addEventListener("click", (e) => {
   const figure = e.target.closest("figure");
@@ -473,7 +489,7 @@ async function selectRun(runId) {
     }
 
     renderResult(data);
-    const statusMsg = data.kind === "content-comparison" ? "Hoàn tất so sánh nội dung." : data.kind === "manual-test-cases" ? "Hoàn tất tạo test case." : "Hoàn tất AI Test.";
+    const statusMsg = data.status === "partial" ? "Hoàn tất một phần; cần kiểm tra artifact hoặc trang lỗi." : data.kind === "content-comparison" ? "Hoàn tất so sánh nội dung." : data.kind === "manual-test-cases" ? "Hoàn tất tạo test case." : "Hoàn tất AI Test.";
     setStatus(statusMsg, "success");
     setRunning(false);
   } catch (error) {
@@ -507,13 +523,21 @@ function connectEvents(runId) {
     appendLog(event.payload);
   });
 
+  source.addEventListener("crawl-progress", (message) => {
+    const event = JSON.parse(message.data);
+    const progress = event.payload || {};
+    const suffix = progress.error ? ` - lỗi: ${progress.error}` : "";
+    setStatus(`Playwright ${progress.phase || "crawl"}: ${progress.current || 0}/${progress.total || "?"}${suffix}`, progress.error ? "error" : "running");
+    appendLog(`[Playwright] ${progress.phase || "crawl"} ${progress.current || 0}/${progress.total || "?"}: ${progress.url || ""}${suffix}`);
+  });
+
   source.addEventListener("complete", (message) => {
     const event = JSON.parse(message.data);
     source.close();
     if (eventSource === source) eventSource = null;
     renderResult(event.payload);
     setRunning(false);
-    const statusMsg = event.payload.kind === "content-comparison" ? "Hoàn tất so sánh nội dung." : event.payload.kind === "manual-test-cases" ? "Hoàn tất tạo test case." : "Hoàn tất AI Test.";
+    const statusMsg = event.payload.status === "partial" ? "Hoàn tất một phần; cần kiểm tra artifact hoặc trang lỗi." : event.payload.kind === "content-comparison" ? "Hoàn tất so sánh nội dung." : event.payload.kind === "manual-test-cases" ? "Hoàn tất tạo test case." : "Hoàn tất AI Test.";
     setStatus(
       statusMsg,
       "success"
@@ -528,6 +552,16 @@ function connectEvents(runId) {
     if (eventSource === source) eventSource = null;
     setRunning(false);
     setStatus(event.payload, "error");
+    appendLog(event.payload);
+    loadHistory();
+  });
+
+  source.addEventListener("cancelled", (message) => {
+    const event = JSON.parse(message.data);
+    source.close();
+    if (eventSource === source) eventSource = null;
+    setRunning(false);
+    setStatus("Phiên đã được hủy.", "idle");
     appendLog(event.payload);
     loadHistory();
   });
@@ -561,7 +595,7 @@ function renderManualTestCasesResult(result) {
         .join("")
     : "Không có ảnh chụp lỗi trong thiết kế test case.";
 
-  testCasesOutput.innerHTML = marked.parse(result.testCasesMd || "_Không có nội dung._");
+  testCasesOutput.innerHTML = renderSafeMarkdown(result.testCasesMd || "_Không có nội dung._");
   downloadTestCasesMd.href = result.files.testCasesReport;
   downloadTestCasesMd.classList.remove("hidden");
 
@@ -591,8 +625,8 @@ function renderAiTestResult(result) {
         .join("")
     : "Không có ảnh chụp trong TEST_EVIDENCE.";
 
-  reportOutput.innerHTML = marked.parse(result.testReportMd || "_Không có nội dung._");
-  fixOutput.innerHTML = marked.parse(result.fixPlanMd || "_Không có nội dung._");
+  reportOutput.innerHTML = renderSafeMarkdown(result.testReportMd || "_Không có nội dung._");
+  fixOutput.innerHTML = renderSafeMarkdown(result.fixPlanMd || "_Không có nội dung._");
   downloadReport.href = result.files.testReport;
   downloadFixPlan.href = result.files.fixPlan;
   downloadReport.classList.remove("hidden");
@@ -603,7 +637,7 @@ function renderAiTestResult(result) {
 }
 
 function renderContentComparisonResult(result) {
-  comparisonReportOutput.innerHTML = marked.parse(
+  comparisonReportOutput.innerHTML = renderSafeMarkdown(
     result.contentComparisonReportMd || "_Không có nội dung báo cáo._"
   );
   renderPagePairs(result.pagePairs || []);
@@ -710,6 +744,9 @@ function setRunning(isRunning, mode = "") {
   manualRunButton.disabled = isRunning;
   manualClearButton.disabled = isRunning;
   manualJsonInput.disabled = isRunning;
+  cancelRunButton.classList.toggle("hidden", !isRunning);
+  cancelRunButton.disabled = !isRunning;
+  if (isRunning) currentRunMode = mode;
 
   const runSpinner = runButton.querySelector(".btn-spinner");
   const runText = runButton.querySelector(".btn-text");
@@ -744,6 +781,28 @@ function setStatus(message, type) {
   statusBox.className = `status ${type}`;
 }
 
+function renderSafeMarkdown(value) {
+  if (!window.marked?.parse) return `<pre>${escapeHtml(value)}</pre>`;
+  const html = marked.parse(String(value), { gfm: true, breaks: true, headerIds: false, mangle: false });
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  doc.querySelectorAll("script, iframe, object, embed, style, form, input, button").forEach((node) => node.remove());
+  doc.querySelectorAll("*").forEach((node) => {
+    [...node.attributes].forEach((attribute) => {
+      if (attribute.name.toLowerCase().startsWith("on") || attribute.name.toLowerCase() === "style") node.removeAttribute(attribute.name);
+    });
+  });
+  doc.querySelectorAll("a, img").forEach((node) => {
+    const attr = node.tagName === "A" ? "href" : "src";
+    const url = node.getAttribute(attr) || "";
+    if (!/^https?:\/\//i.test(url)) node.removeAttribute(attr);
+    if (node.tagName === "A") {
+      node.setAttribute("target", "_blank");
+      node.setAttribute("rel", "noreferrer noopener");
+    }
+  });
+  return doc.body.innerHTML;
+}
+
 function activatePanel(panelId) {
   document.querySelectorAll(".tab").forEach((item) => {
     item.classList.toggle("active", item.dataset.target === panelId);
@@ -765,7 +824,10 @@ function normalizeUrlInput(value) {
 
 function renderUrlCell(value) {
   if (!value) return "<span class=\"muted\">Không có</span>";
-  const safeValue = escapeHtml(value);
+  let parsed;
+  try { parsed = new URL(value); } catch { return "<span class=\"muted\">URL không hợp lệ</span>"; }
+  if (!["http:", "https:"].includes(parsed.protocol)) return "<span class=\"muted\">URL không an toàn</span>";
+  const safeValue = escapeHtml(parsed.href);
   return `<a href="${safeValue}" target="_blank" rel="noreferrer">${safeValue}</a>`;
 }
 

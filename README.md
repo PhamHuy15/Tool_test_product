@@ -22,6 +22,18 @@ D:\workspaces\AI Test Local Web\server
 
 ```text
 http://127.0.0.1:4545
+
+## 17. PhÃ¢n phá»‘i cho ngÆ°á»i dÃ¹ng Windows
+
+Báº£n phÃ¡t hÃ nh cÃ³ installer Inno Setup táº¡i `installer/LocalAITestWeb.iss`.
+Installer cÃ i frontend, backend, prompt vÃ  launcher. NgÆ°á»i dÃ¹ng váº«n cáº§n Node.js 18+
+vÃ  Codex CLI, sau Ä‘Ã³ cháº¡y `codex login` báº±ng tÃ i khoáº£n riÃªng.
+
+Launcher tá»± kiá»ƒm tra Node.js/Codex CLI, tá»± cÃ i dependency server khi cáº§n vÃ  má»Ÿ
+`http://127.0.0.1:4545`. Máº·c Ä‘á»‹nh server chá»‰ cho phÃ©p crawl website public qua HTTP/HTTPS;
+localhost vÃ  private network bá»‹ cháº·n Ä‘á»ƒ an toÃ n khi phÃ¢n phá»‘i cho nhiá»u ngÆ°á»i.
+
+HÆ°á»›ng dáº«n ngÆ°á»i dÃ¹ng chi tiáº¿t náº±m trong `docs/USER_GUIDE.md`.
 ```
 
 ## 2. Cấu trúc thư mục

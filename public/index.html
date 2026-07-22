@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self';" />
     <title>Local AI Test Web — Developer Console</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -12,10 +13,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/style.css" />
-    <script
-      src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"
-      defer
-    ></script>
+    <script src="/vendor/marked.min.js" defer></script>
     <script src="/app.js" defer></script>
   </head>
   <body>
@@ -182,6 +180,7 @@
           <div id="status" class="status idle">Sẵn sàng.</div>
 
           <!-- Lịch sử các phiên chạy -->
+          <button id="cancelRunButton" class="secondary hidden" type="button">Hủy phiên đang chạy</button>
           <div class="history-wrapper">
             <div class="history-header">
               <h2>Lịch sử chạy</h2>
